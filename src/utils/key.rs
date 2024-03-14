@@ -1,3 +1,6 @@
+use std::str::FromStr;
+
+use bip39::{Mnemonic, Seed};
 use bitcoin::{bip32::{DerivationPath, Xpriv, Xpub}, Network};
 use secp256k1::Secp256k1;
 use serde::Serialize;
@@ -26,4 +29,12 @@ where
     hasher.update(data);
     let result = hasher.finalize();
     hex::encode(result)
+}
+
+
+pub fn keypair_by_index(mnemonic: &Mnemonic, derivation_path: &DerivationPath, index: i32) -> Result<(Xpriv,Xpub), Error> {
+    let seed_m = Seed::new(mnemonic, "");
+    let (privk, pubk) = get_extended_keypair(seed_m.as_bytes(), &derivation_path)?;
+
+    Ok((privk,pubk))
 }
