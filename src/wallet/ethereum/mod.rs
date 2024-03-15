@@ -1,12 +1,8 @@
 pub mod address;
 
-use std::str::FromStr;
-
-use bip39::Seed;
-use bitcoin::bip32::DerivationPath;
 use ethers::types::{Transaction, U256};
 
-use crate::{error::Error, types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData}, utils::key::{get_extended_keypair, keypair_by_index}};
+use crate::{error::Error, types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData}, utils::key::keypair_by_index};
 
 use self::address::extended_pubk_to_addr;
 
@@ -19,7 +15,7 @@ pub struct EthereumWallet {
 impl EthereumWallet {
     fn eth_address_by_index(&self, index: i32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (privk,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path, index)?;
+        let (_,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
         let eth_addr = extended_pubk_to_addr(&pubk)?;
 
         Ok(eth_addr.get().to_owned())
@@ -27,21 +23,21 @@ impl EthereumWallet {
 
     fn eth_pubkey_by_index(&self, index: i32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (_,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path, index)?;
+        let (_,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(pubk.to_string())
     }
 
     fn eth_privkey_by_index(&self, index: i32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (privk,_) = keypair_by_index(&self.seed.mnemonic, &derivation_path, index)?;
+        let (privk,_) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(privk.private_key.display_secret().to_string())
     }
 
     fn eth_keypair_by_index(&self, index: i32) -> Result<(String,String), Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (privk,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path, index)?;
+        let (privk,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok((privk.private_key.display_secret().to_string(),pubk.to_string()))
     }
@@ -60,16 +56,16 @@ impl Wallet for EthereumWallet {
     fn keypair(&self, index: i32) -> Result<(String, String), Error> {
         self.eth_keypair_by_index(index)
     }
-    fn balance(&self, index: i32, provider: &str) -> Result<ethers::types::U256, Error> {
+    fn balance(&self, _index: i32, _provider: &str) -> Result<ethers::types::U256, Error> {
         unimplemented!()
     }
-    fn balance_token(&self, index: i32, token_address: &str, provider: &str) -> Result<TokenData, Error> {
+    fn balance_token(&self, _index: i32, _token_address: &str, _provider: &str) -> Result<TokenData, Error> {
         unimplemented!()
     }
-    fn sweep(&self, index: i32, to: &str, provider: &str) -> Result<(Transaction,U256), Error> {
+    fn sweep(&self, _index: i32, _to: &str, _provider: &str) -> Result<(Transaction,U256), Error> {
         unimplemented!()
     }
-    fn sweep_token(&self, index: i32, token_address: &str, to: &str, provider: &str) -> Result<(Transaction, TokenData), Error> {
+    fn sweep_token(&self, _index: i32, _token_address: &str, _to: &str, _provider: &str) -> Result<(Transaction, TokenData), Error> {
         unimplemented!()
     }
 }

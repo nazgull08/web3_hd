@@ -1,12 +1,8 @@
 pub mod address;
 
-use std::str::FromStr;
-
-use bip39::Seed;
-use bitcoin::bip32::DerivationPath;
 use ethers::types::{Transaction, U256};
 
-use crate::{error::Error, types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData}, utils::key::{get_extended_keypair, keypair_by_index}};
+use crate::{error::Error, types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData}, utils::key::keypair_by_index};
 
 use self::address::extended_pubk_to_addr_tron;
 use super::Wallet;
@@ -17,11 +13,32 @@ pub struct TronWallet{
 
 impl TronWallet {
     pub fn tron_address_by_index(&self, index: i32) -> Result<String, Error> {
-        let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (privk,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path, index)?;
+        let derivation_path = Crypto::Tron.get_hd_path(index)?;
+        let (_,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
         let tron_addr = extended_pubk_to_addr_tron(&pubk)?;
 
         Ok(tron_addr)
+    }
+
+    fn tron_pubkey_by_index(&self, index: i32) -> Result<String, Error> {
+        let derivation_path = Crypto::Tron.get_hd_path(index)?;
+        let (_,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+
+        Ok(pubk.to_string())
+    }
+    
+    fn tron_privkey_by_index(&self, index: i32) -> Result<String, Error> {
+        let derivation_path = Crypto::Tron.get_hd_path(index)?;
+        let (privk,_) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+
+        Ok(privk.private_key.display_secret().to_string())
+    }
+
+    fn tron_keypair_by_index(&self, index: i32) -> Result<(String,String), Error> {
+        let derivation_path = Crypto::Tron.get_hd_path(index)?;
+        let (privk,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+
+        Ok((privk.private_key.display_secret().to_string(),pubk.to_string()))
     }
     
 }
@@ -31,24 +48,24 @@ impl Wallet for TronWallet {
         self.tron_address_by_index(index)
     }
     fn public(&self, index: i32) -> Result<String, Error> {
-        unimplemented!()
+        self.tron_pubkey_by_index(index)
     }
     fn private(&self, index: i32) -> Result<String, Error> {
-        unimplemented!()
+        self.tron_privkey_by_index(index)
     }
     fn keypair(&self, index: i32) -> Result<(String, String), Error> {
+        self.tron_keypair_by_index(index)
+    }
+    fn balance(&self, _index: i32, _provider: &str) -> Result<ethers::types::U256, Error> {
         unimplemented!()
     }
-    fn balance(&self, index: i32, provider: &str) -> Result<ethers::types::U256, Error> {
+    fn balance_token(&self, _index: i32, _token_address: &str, _provider: &str) -> Result<TokenData, Error> {
         unimplemented!()
     }
-    fn balance_token(&self, index: i32, token_address: &str, provider: &str) -> Result<TokenData, Error> {
+    fn sweep(&self, _index: i32, _to: &str, _provider: &str) -> Result<(Transaction,U256), Error> {
         unimplemented!()
     }
-    fn sweep(&self, index: i32, to: &str, provider: &str) -> Result<(Transaction,U256), Error> {
-        unimplemented!()
-    }
-    fn sweep_token(&self, index: i32, token_address: &str, to: &str, provider: &str) -> Result<(Transaction, TokenData), Error> {
+    fn sweep_token(&self, _index: i32, _token_address: &str, _to: &str, _provider: &str) -> Result<(Transaction, TokenData), Error> {
         unimplemented!()
     }
 }
@@ -68,30 +85,29 @@ mod tests {
 
         let wallet = TronWallet { seed };
         
-        let expected_address_0 = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94";
+        let expected_address_0 = "TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH";
         assert_eq!(wallet.address(0).unwrap(), expected_address_0);
     }
-/*
+
     #[test]
-    fn test_eth_pubkey_by_index() {
+    fn test_tron_pubkey_by_index() {
         let mnemonic = Mnemonic::from_phrase(PHRASE, Language::English).unwrap();
         let seed = HDSeed { mnemonic };
 
         let wallet = TronWallet { seed };
         
-        let expected_pubkey = "xpub6H6LG2We64bdwqNF7gNkUJ5EvDibiT2gbs77oonbawV86XE3eMxZf9czGQ9CPdSzsdsHLnLEjiJJEDnFMAyLrWATesaVbTYeggBXMHaFKLg";
+        let expected_pubkey = "xpub6GH5FbhZEomKSf2YeFsq92oVisrWG9b1H6sHW2RYmGJtasVd7LckJXiovzCLL52Dz7GsrQJWoXTshExmhqxNtsnu8GoD1S3kHzLfg1Apo8d";
         assert_eq!(wallet.public(0).unwrap(), expected_pubkey);
     }
 
     #[test]
-    fn test_eth_privkey_by_index() {
+    fn test_tron_privkey_by_index() {
         let mnemonic = Mnemonic::from_phrase(PHRASE, Language::English).unwrap();
         let seed = HDSeed { mnemonic };
 
         let wallet = TronWallet { seed };
         
-        let expected_privkey = "1ab42cc412b618bdea3a599e3c9bae199ebf030895b039e9db1e30dafb12b727";
+        let expected_privkey = "b5a4cea271ff424d7c31dc12a3e43e401df7a40d7412a15750f3f0b6b5449a28";
         assert_eq!(wallet.private(0).unwrap(), expected_privkey);
     }
-*/
 }
