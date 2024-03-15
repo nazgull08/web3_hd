@@ -12,4 +12,12 @@ pub enum Error {
     HexError(#[from] hex::FromHexError),
     #[error("Mnemonic error")]
     MnemonicError(String),
+    #[error("Url parse error")]
+    UrlParseError(#[from] url::ParseError),
+    #[error("Ether providers error")]
+    EtherProvidersError(#[from] ethers::providers::ProviderError),
+    #[error("TronAddr decoding error")]
+    TronAddrDecodingError,
+    #[error("TronAddr is invalid length")]
+    TronAddrLengthError,
 }

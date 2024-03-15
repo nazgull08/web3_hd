@@ -1,8 +1,15 @@
 pub mod address;
 
-use ethers::types::{Transaction, U256};
+use ethers::{
+    providers::{Http, Middleware, Provider},
+    types::{Transaction, U256},
+};
 
-use crate::{error::Error, types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData}, utils::key::keypair_by_index};
+use crate::{
+    error::Error,
+    types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData},
+    utils::key::keypair_by_index,
+};
 
 use self::address::extended_pubk_to_addr;
 
@@ -15,7 +22,7 @@ pub struct EthereumWallet {
 impl EthereumWallet {
     fn eth_address_by_index(&self, index: i32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (_,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+        let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
         let eth_addr = extended_pubk_to_addr(&pubk)?;
 
         Ok(eth_addr.get().to_owned())
@@ -23,23 +30,33 @@ impl EthereumWallet {
 
     fn eth_pubkey_by_index(&self, index: i32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (_,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+        let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(pubk.to_string())
     }
 
     fn eth_privkey_by_index(&self, index: i32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (privk,_) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+        let (privk, _) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(privk.private_key.display_secret().to_string())
     }
 
-    fn eth_keypair_by_index(&self, index: i32) -> Result<(String,String), Error> {
+    fn eth_keypair_by_index(&self, index: i32) -> Result<(String, String), Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
-        let (privk,pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+        let (privk, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
-        Ok((privk.private_key.display_secret().to_string(),pubk.to_string()))
+        Ok((
+            privk.private_key.display_secret().to_string(),
+            pubk.to_string(),
+        ))
+    }
+
+    async fn eth_balance_by_index(&self, index: i32, provider_url: &str) -> Result<U256, Error> {
+        let addr = self.eth_address_by_index(index)?;
+        let provider = Provider::<Http>::try_from(provider_url)?;
+        let balance = provider.get_balance(addr, None).await?;
+        Ok(balance)
     }
 }
 
@@ -56,26 +73,36 @@ impl Wallet for EthereumWallet {
     fn keypair(&self, index: i32) -> Result<(String, String), Error> {
         self.eth_keypair_by_index(index)
     }
-    fn balance(&self, _index: i32, _provider: &str) -> Result<ethers::types::U256, Error> {
+    async fn balance(&self, index: i32, provider: &str) -> Result<U256, Error> {
+        self.eth_balance_by_index(index, provider).await
+    }
+    fn balance_token(
+        &self,
+        _index: i32,
+        _token_address: &str,
+        _provider: &str,
+    ) -> Result<TokenData, Error> {
         unimplemented!()
     }
-    fn balance_token(&self, _index: i32, _token_address: &str, _provider: &str) -> Result<TokenData, Error> {
+    fn sweep(&self, _index: i32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()
     }
-    fn sweep(&self, _index: i32, _to: &str, _provider: &str) -> Result<(Transaction,U256), Error> {
-        unimplemented!()
-    }
-    fn sweep_token(&self, _index: i32, _token_address: &str, _to: &str, _provider: &str) -> Result<(Transaction, TokenData), Error> {
+    fn sweep_token(
+        &self,
+        _index: i32,
+        _token_address: &str,
+        _to: &str,
+        _provider: &str,
+    ) -> Result<(Transaction, TokenData), Error> {
         unimplemented!()
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bip39::{Mnemonic, Language};
+    use bip39::{Language, Mnemonic};
+
     const PHRASE : &str = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
     #[test]
@@ -84,7 +111,7 @@ mod tests {
         let seed = HDSeed { mnemonic };
 
         let wallet = EthereumWallet { seed };
-        
+
         let expected_address_0 = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94";
         assert_eq!(wallet.address(0).unwrap(), expected_address_0);
     }
@@ -95,7 +122,7 @@ mod tests {
         let seed = HDSeed { mnemonic };
 
         let wallet = EthereumWallet { seed };
-        
+
         let expected_pubkey = "xpub6H6LG2We64bdwqNF7gNkUJ5EvDibiT2gbs77oonbawV86XE3eMxZf9czGQ9CPdSzsdsHLnLEjiJJEDnFMAyLrWATesaVbTYeggBXMHaFKLg";
         assert_eq!(wallet.public(0).unwrap(), expected_pubkey);
     }
@@ -106,7 +133,7 @@ mod tests {
         let seed = HDSeed { mnemonic };
 
         let wallet = EthereumWallet { seed };
-        
+
         let expected_privkey = "1ab42cc412b618bdea3a599e3c9bae199ebf030895b039e9db1e30dafb12b727";
         assert_eq!(wallet.private(0).unwrap(), expected_privkey);
     }

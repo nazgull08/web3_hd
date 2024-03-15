@@ -19,4 +19,3 @@ pub enum BalanceState {
         balance: U256,
     },
 }
-

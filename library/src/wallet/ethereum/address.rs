@@ -1,11 +1,9 @@
 use std::str::FromStr;
 
 use bitcoin::{bip32::Xpub, PublicKey};
-use log::info;
 use serde::{Deserialize, Serialize};
 
 use crate::{error::Error, utils::key::keccak_hash};
-
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct EthAddr(String);
@@ -18,10 +16,7 @@ impl EthAddr {
             proper_addr = format!("0x{}", addr);
         }
         //check that passed str is a hex string
-        hex::decode(&proper_addr[2..]).map_err(|e| {
-            info!("String passed into EthAddr is not hex.");
-            e
-        })?;
+        hex::decode(&proper_addr[2..]).map_err(Error::HexError)?;
         //check length
         if proper_addr.len() != 42 {
             return Err(Error::EthAddrLengthError(proper_addr.len()));
@@ -34,7 +29,6 @@ impl EthAddr {
         &self.0
     }
 }
-
 
 pub fn extended_pubk_to_addr(pubk: &Xpub) -> Result<EthAddr, Error> {
     //massage into the right format

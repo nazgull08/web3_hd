@@ -1,43 +1,32 @@
 use std::str::FromStr;
 
-use bitcoin::{bip32::Xpub, PublicKey,base58};
-use log::info;
+use bitcoin::{base58, bip32::Xpub, PublicKey};
 use serde::{Deserialize, Serialize};
 use sha256::digest;
 
 use crate::{error::Error, utils::key::keccak_hash};
-
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct TronAddr(String);
 
 impl TronAddr {
     pub fn new(addr: &str) -> Result<Self, Error> {
-        let mut proper_addr = addr.to_owned();
-        //check for 0x prefix
-        if !addr.starts_with("0x") {
-            proper_addr = format!("0x{}", addr);
+        // decode from Base58Check.
+        let decoded = base58::decode(addr).map_err(|_| Error::TronAddrDecodingError)?;
+
+        // length check
+        if decoded.len() != 25 {
+            return Err(Error::TronAddrLengthError);
         }
-        //check that passed str is a hex string
-        hex::decode(&proper_addr[2..]).map_err(|e| {
-            info!("String passed into TronAddr is not base58.");
-            e
-        })?;
-        //check length
-        if proper_addr.len() != 42 {
-            return Err(Error::EthAddrLengthError(proper_addr.len()));
-        }
-        //checksum and return
-        let checksummed_addr = eth_checksum::checksum(&proper_addr);
-        Ok(Self(checksummed_addr))
+
+        Ok(Self(addr.to_string()))
     }
     pub fn get(&self) -> &str {
         &self.0
     }
 }
 
-
-pub fn extended_pubk_to_addr_tron(pubk: &Xpub) -> Result<String, Error> {
+pub fn extended_pubk_to_addr_tron(pubk: &Xpub) -> Result<TronAddr, Error> {
     //massage into the right format
     let pubk_str = pubk.public_key.to_string();
     let pubk_secp = secp256k1::PublicKey::from_str(&pubk_str)?;
@@ -58,5 +47,6 @@ pub fn extended_pubk_to_addr_tron(pubk: &Xpub) -> Result<String, Error> {
     let final_addr = experimental_addr + check_sum_val1;
     let final_addr_bytes = hex::decode(final_addr)?;
 
-    Ok(base58::encode(&final_addr_bytes))
+    let addr = &base58::encode(&final_addr_bytes);
+    TronAddr::new(addr)
 }

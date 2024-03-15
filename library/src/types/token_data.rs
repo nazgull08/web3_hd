@@ -8,4 +8,3 @@ pub struct TokenData {
     pub symbol: String,
     pub address: String,
 }
-

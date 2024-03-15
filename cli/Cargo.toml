@@ -1,0 +1,14 @@
+[package]
+name = "web3_hd_cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["Nazgull08"]
+description = "CLI wallet for web3_hd library"
+license = "Apache-2.0"
+repository = "https://github.com/nazgull08/web3_hd"
+
+[dependencies]
+clap = "4.5.3"
+config = "0.14.0"
+log = "^0.4.21"
+web3_hd = { path = "../library" }

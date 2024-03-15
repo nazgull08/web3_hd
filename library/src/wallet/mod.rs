@@ -81,7 +81,11 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the balance as `U256` if successful, or an error if not.
-    fn balance(&self, index: i32, provider: &str) -> Result<U256, Error>;
+    fn balance(
+        &self,
+        index: i32,
+        provider: &str,
+    ) -> impl std::future::Future<Output = Result<U256, Error>> + Send;
 
     /// Retrieves the token balance of the specified token in the wallet at the given index.
     ///
@@ -94,7 +98,12 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the token balance as `TokenData` if successful, or an error if not.
-    fn balance_token(&self, index: i32, token_address: &str, provider: &str) -> Result<TokenData, Error>;
+    fn balance_token(
+        &self,
+        index: i32,
+        token_address: &str,
+        provider: &str,
+    ) -> Result<TokenData, Error>;
     /// Transfers all available native currency from the wallet at the specified index to another address.
     ///
     /// # Arguments
@@ -120,5 +129,11 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing a tuple (transaction details, transferred token balance) if successful, or an error if not.
-    fn sweep_token(&self, index: i32, token_address: &str, to: &str, provider: &str) -> Result<(Transaction, TokenData), Error>;
+    fn sweep_token(
+        &self,
+        index: i32,
+        token_address: &str,
+        to: &str,
+        provider: &str,
+    ) -> Result<(Transaction, TokenData), Error>;
 }

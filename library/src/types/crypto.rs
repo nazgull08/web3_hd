@@ -11,7 +11,7 @@ pub enum Crypto {
 }
 
 impl Crypto {
-    pub fn get_hd_path(&self, index: i32) -> Result<DerivationPath,Error> {
+    pub fn get_hd_path(&self, index: i32) -> Result<DerivationPath, Error> {
         let str_path = match self {
             Crypto::Eth | Crypto::Polygon | Crypto::BSC => format!("m/44'/60'/0'/0/{}", index),
             Crypto::Tron => format!("m/44'/195'/0'/0/{}", index),
@@ -19,4 +19,3 @@ impl Crypto {
         DerivationPath::from_str(&str_path)
     }
 }
-
