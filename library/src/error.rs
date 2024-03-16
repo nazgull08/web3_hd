@@ -12,6 +12,8 @@ pub enum Error {
     HexError(#[from] hex::FromHexError),
     #[error("Mnemonic error")]
     MnemonicError(String),
+    #[error("String to H160 error {0}")]
+    AddrToH160Error(#[from] rustc_hex::FromHexError),
     #[error("Url parse error")]
     UrlParseError(#[from] url::ParseError),
     #[error("Ether providers error")]

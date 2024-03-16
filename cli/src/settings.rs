@@ -1,4 +1,4 @@
-use config::{Config, ConfigError, Environment, File};
+use config::{Config, ConfigError, File};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -20,27 +20,11 @@ pub struct Settings {
     pub bsc_provider: String,
 }
 
-
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let s = Config::builder()
-            .add_source(File::with_name("config").required(false))
-            .add_source(Environment::with_prefix("APP"))
+            .add_source(File::with_name("config.toml").required(true))
             .build()?;
-        let mut settings : Settings= s.clone().try_deserialize()?;
-        if let Ok(tokens_str) = s.get::<String>("eth_tokens") {
-            settings.eth_tokens = tokens_str.split(',').map(|s| s.trim().to_string()).collect();
-        }
-        if let Ok(tokens_str) = s.get::<String>("tron_tokens") {
-            settings.tron_tokens = tokens_str.split(',').map(|s| s.trim().to_string()).collect();
-        }
-        if let Ok(tokens_str) = s.get::<String>("plg_tokens") {
-            settings.plg_tokens = tokens_str.split(',').map(|s| s.trim().to_string()).collect();
-        }
-        if let Ok(tokens_str) = s.get::<String>("bsc_tokens") {
-            settings.bsc_tokens = tokens_str.split(',').map(|s| s.trim().to_string()).collect();
-        }
-        println!("s {:?}",settings);
-        Ok(settings)
+        s.try_deserialize()
     }
 }

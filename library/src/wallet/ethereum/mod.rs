@@ -1,5 +1,6 @@
 pub mod address;
 
+use async_trait::async_trait;
 use ethers::{
     providers::{Http, Middleware, Provider},
     types::{Transaction, U256},
@@ -7,8 +8,8 @@ use ethers::{
 
 use crate::{
     error::Error,
-    types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData},
-    utils::key::keypair_by_index,
+    types::{crypto::Crypto, hdseed::{FromSeed, HDSeed}, token_data::TokenData},
+    utils::{address::address_str_to_h160, key::keypair_by_index},
 };
 
 use self::address::extended_pubk_to_addr;
@@ -17,6 +18,12 @@ use super::Wallet;
 
 pub struct EthereumWallet {
     pub seed: HDSeed,
+}
+
+impl FromSeed for EthereumWallet {
+    fn from_seed(seed: HDSeed) -> Self {
+        EthereumWallet { seed }
+    }
 }
 
 impl EthereumWallet {
@@ -54,12 +61,16 @@ impl EthereumWallet {
 
     async fn eth_balance_by_index(&self, index: i32, provider_url: &str) -> Result<U256, Error> {
         let addr = self.eth_address_by_index(index)?;
+        let addr_h160 = address_str_to_h160(&addr)?;
         let provider = Provider::<Http>::try_from(provider_url)?;
-        let balance = provider.get_balance(addr, None).await?;
+        println!("provider {:?}",provider);
+        let balance = provider.get_balance(addr_h160, None).await?;
+        println!("balance {:?}",balance );
         Ok(balance)
     }
 }
 
+#[async_trait]
 impl Wallet for EthereumWallet {
     fn address(&self, index: i32) -> Result<String, Error> {
         self.eth_address_by_index(index)

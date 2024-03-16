@@ -1,10 +1,11 @@
 pub mod address;
 
+use async_trait::async_trait;
 use ethers::types::{Transaction, U256};
 
 use crate::{
     error::Error,
-    types::{crypto::Crypto, hdseed::HDSeed, token_data::TokenData},
+    types::{crypto::Crypto, hdseed::{FromSeed, HDSeed}, token_data::TokenData},
     utils::key::keypair_by_index,
 };
 
@@ -13,6 +14,12 @@ use super::Wallet;
 
 pub struct TronWallet {
     pub seed: HDSeed,
+}
+
+impl FromSeed for TronWallet {
+    fn from_seed(seed: HDSeed) -> Self {
+        TronWallet { seed }
+    }
 }
 
 impl TronWallet {
@@ -49,6 +56,7 @@ impl TronWallet {
     }
 }
 
+#[async_trait]
 impl Wallet for TronWallet {
     fn address(&self, index: i32) -> Result<String, Error> {
         self.tron_address_by_index(index)

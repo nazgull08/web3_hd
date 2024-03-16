@@ -8,9 +8,8 @@ license = "Apache-2.0"
 repository = "https://github.com/nazgull08/web3_hd"
 
 [dependencies]
-clap = "4.5.3"
+clap = { version = "4.5.3", features = ["derive"] }
 config = "0.14.0"
-dotenv = "0.15.0"
 log = "^0.4.21"
 serde = { version = "1.0.197", features = ["derive"] }
 thiserror = "^1.0.58"

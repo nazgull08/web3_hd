@@ -14,3 +14,9 @@ impl HDSeed {
         Ok(HDSeed { mnemonic })
     }
 }
+
+pub trait FromSeed {
+    fn from_seed(seed: HDSeed) -> Self;
+}
+
+

@@ -16,6 +16,7 @@
 //! the addition of new wallet types as needed. Users can interact with different
 //! blockchain wallets through a unified interface provided by the `Wallet` trait.
 
+use async_trait::async_trait;
 use ethers::types::{Transaction, U256};
 
 use crate::{error::Error, types::token_data::TokenData};
@@ -26,6 +27,7 @@ pub mod tron;
 /// A common trait defining the interface for interacting with cryptocurrency wallets.
 /// This trait specifies the methods that all wallet implementations must provide,
 /// ensuring a consistent behavior across different types of wallets.
+#[async_trait]
 pub trait Wallet {
     /// Retrieves the wallet's address at the specified index.
     ///
@@ -81,11 +83,11 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the balance as `U256` if successful, or an error if not.
-    fn balance(
+    async fn balance(
         &self,
         index: i32,
         provider: &str,
-    ) -> impl std::future::Future<Output = Result<U256, Error>> + Send;
+    ) -> Result<U256, Error>;
 
     /// Retrieves the token balance of the specified token in the wallet at the given index.
     ///

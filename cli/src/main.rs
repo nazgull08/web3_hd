@@ -1,16 +1,18 @@
-pub mod settings;
+pub mod cli;
+pub mod commands;
 pub mod error;
+pub mod settings;
 
+use cli::{handle_command, Cli};
+use clap::Parser;
 use error::Error;
 use settings::Settings;
 
-use dotenv::dotenv;
-
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    dotenv().ok();
+    let args = Cli::parse();
+
     let settings = Settings::new()?;
-    println!("settings {:?}",settings);
+    handle_command(args, settings).await?;
     Ok(())
 }
