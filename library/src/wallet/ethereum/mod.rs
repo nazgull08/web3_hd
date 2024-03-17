@@ -63,9 +63,7 @@ impl EthereumWallet {
         let addr = self.eth_address_by_index(index)?;
         let addr_h160 = address_str_to_h160(&addr)?;
         let provider = Provider::<Http>::try_from(provider_url)?;
-        println!("provider {:?}",provider);
         let balance = provider.get_balance(addr_h160, None).await?;
-        println!("balance {:?}",balance );
         Ok(balance)
     }
 }

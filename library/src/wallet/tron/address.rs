@@ -21,6 +21,21 @@ impl TronAddr {
 
         Ok(Self(addr.to_string()))
     }
+
+    pub fn new_hex(addr: &str) -> Result<Self, Error> {
+        let mut proper_addr = addr.to_owned();
+        //check for 0x prefix
+        // Check and replace "0x" prefix with "41"
+        if proper_addr.starts_with("0x") {
+            proper_addr = proper_addr.replacen("0x", "41", 1);
+        } else if !proper_addr.starts_with("41") {
+            proper_addr = format!("41{}", addr);
+        }
+        //check that passed str is a hex string
+        hex::decode(&proper_addr[2..]).map_err(Error::HexError)?;
+        //checksum and return
+        Ok(Self(proper_addr))
+    }
     pub fn get(&self) -> &str {
         &self.0
     }
@@ -49,4 +64,19 @@ pub fn extended_pubk_to_addr_tron(pubk: &Xpub) -> Result<TronAddr, Error> {
 
     let addr = &base58::encode(&final_addr_bytes);
     TronAddr::new(addr)
+}
+
+pub fn extended_pubk_to_addr_tron_hex(pubk: &Xpub) -> Result<TronAddr, Error> {
+    //massage into the right format
+    let pubk_str = pubk.public_key.to_string();
+    let pubk_secp = secp256k1::PublicKey::from_str(&pubk_str)?;
+    //format as uncompressed key, remove "04" in the beginning
+    let pubk_uncomp = &PublicKey::new_uncompressed(pubk_secp).to_string()[2..];
+    //decode from hex and pass to keccak for hashing
+    let pubk_bytes = hex::decode(pubk_uncomp)?;
+    let addr = &keccak_hash(&pubk_bytes);
+    //keep last 20 bytes of the result
+    let addr = &addr[(addr.len() - 40)..];
+    //massage into domain unit
+    TronAddr::new_hex(addr)
 }

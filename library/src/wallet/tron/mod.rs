@@ -1,15 +1,15 @@
 pub mod address;
 
 use async_trait::async_trait;
-use ethers::types::{Transaction, U256};
+use ethers::{providers::{Http, Middleware, Provider}, types::{Transaction, U256}};
 
 use crate::{
     error::Error,
     types::{crypto::Crypto, hdseed::{FromSeed, HDSeed}, token_data::TokenData},
-    utils::key::keypair_by_index,
+    utils::{address::address_str_to_h160, key::keypair_by_index},
 };
 
-use self::address::extended_pubk_to_addr_tron;
+use self::address::{extended_pubk_to_addr_tron, extended_pubk_to_addr_tron_hex};
 use super::Wallet;
 
 pub struct TronWallet {
@@ -29,6 +29,15 @@ impl TronWallet {
         let tron_addr = extended_pubk_to_addr_tron(&pubk)?;
 
         Ok(tron_addr.get().to_owned())
+    }
+
+    pub fn tron_hex_address_by_index(&self, index: i32) -> Result<String, Error> {
+        let derivation_path = Crypto::Tron.get_hd_path(index)?;
+        let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+        let tron_hex_addr = extended_pubk_to_addr_tron_hex(&pubk)?;
+        println!("tron_hex_addr {:?}",tron_hex_addr);
+
+        Ok(tron_hex_addr.get().to_owned())
     }
 
     fn tron_pubkey_by_index(&self, index: i32) -> Result<String, Error> {
@@ -54,6 +63,18 @@ impl TronWallet {
             pubk.to_string(),
         ))
     }
+
+    async fn tron_balance_by_index(&self, index: i32, provider_url: &str) -> Result<U256, Error> {
+        let addr = self.tron_hex_address_by_index(index)?;
+        println!("addr {:?}",addr);
+        let addr_h160 = address_str_to_h160(&addr)?;
+        let provider = Provider::<Http>::try_from(provider_url)?;
+        println!("addrs {:?}",addr);
+        println!("addrs hex {:?}",addr_h160);
+        let balance = provider.get_balance(addr_h160, None).await?;
+        println!("balance {:?}",balance);
+        Ok(balance)
+    }
 }
 
 #[async_trait]
@@ -70,8 +91,8 @@ impl Wallet for TronWallet {
     fn keypair(&self, index: i32) -> Result<(String, String), Error> {
         self.tron_keypair_by_index(index)
     }
-    async fn balance(&self, _index: i32, _provider: &str) -> Result<ethers::types::U256, Error> {
-        unimplemented!()
+    async fn balance(&self, index: i32, provider: &str) -> Result<U256, Error> {
+        self.tron_balance_by_index(index, provider).await
     }
     fn balance_token(
         &self,
