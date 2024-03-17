@@ -1,3 +1,4 @@
+use ethers::providers::{Provider,Http};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -22,4 +23,11 @@ pub enum Error {
     TronAddrDecodingError,
     #[error("TronAddr is invalid length")]
     TronAddrLengthError,
+    #[error("Serde parse error")]
+    SerdeParseError(#[from] serde_json::Error),
+    #[error("Ethers ABI error")]
+    EthersAbiError(#[from] ethers::contract::AbiError),
+    #[error("Ethers contract error")]
+    EthersContractError(#[from] ethers::contract::ContractError<Provider<Http>>),
+
 }

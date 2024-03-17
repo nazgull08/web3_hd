@@ -19,7 +19,7 @@ impl WalletManager {
 
     pub fn get_wallet_provider(
         &self,
-        crypto: Crypto,
+        crypto: &Crypto,
         seed: HDSeed,
     ) -> (Box<dyn Wallet>, &String) {
         match crypto {
@@ -42,10 +42,22 @@ impl WalletManager {
         }
     }
 
+    pub fn get_wallet_tokens(
+        &self,
+        crypto: &Crypto,
+    ) -> &Vec<String> {
+        match crypto {
+            Crypto::Tron => &self.config.tron_tokens,
+            Crypto::Eth => &self.config.eth_tokens,
+            Crypto::BSC => &self.config.bsc_tokens,
+            Crypto::Polygon =>&self.config.plg_tokens
+        }
+    }
+
     pub async fn handle_balance(&self, ocrypto: Option<Crypto>, c: u32) -> Result<(), Error> {
         let seed = HDSeed::new(&self.config.hd_phrase)?;
         if let Some(crypto) = ocrypto{
-            let (wallet, provider_url) = self.get_wallet_provider(crypto, seed);
+            let (wallet, provider_url) = self.get_wallet_provider(&crypto, seed);
             let address = wallet.address(c)?;
             let balance = wallet.balance(c, provider_url).await?;
             println!("Address: {}, Balance: {}", address, balance);
@@ -60,11 +72,27 @@ impl WalletManager {
             let seed = HDSeed::new(&self.config.hd_phrase)?;
             let c_from = c_from.unwrap_or(0);
             let c_to = c_to.unwrap_or(10);
-            let (wallet, provider_url) = self.get_wallet_provider(crypto, seed);
+            let (wallet, provider_url) = self.get_wallet_provider(&crypto, seed);
             for index in c_from..=c_to {
                 let address = wallet.address(index)?;
                 let balance = wallet.balance(index, provider_url).await?;
                 println!("Address: {}, Balance: {}", address, balance);
+            }
+            Ok(())
+        } else{
+            Err(Error::ArgsError)
+        }
+    }
+
+    pub async fn handle_balance_tokens(&self, ocrypto: Option<Crypto>, c: u32) -> Result<(), Error> {
+        let seed = HDSeed::new(&self.config.hd_phrase)?;
+        if let Some(crypto) = ocrypto{
+            let (wallet, provider_url) = self.get_wallet_provider(&crypto, seed);
+            let tokens = self.get_wallet_tokens(&crypto);
+            let address = wallet.address(c)?;
+            for token in tokens{
+                let balance = wallet.balance_token(c, &token, &provider_url).await?;
+                println!("Address: {},\n Token: {}, Balance: {}", address, token, balance);
             }
             Ok(())
         } else{

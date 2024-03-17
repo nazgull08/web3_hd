@@ -3928,6 +3928,7 @@ dependencies = [
  "rustc-hex",
  "secp256k1",
  "serde",
+ "serde_json",
  "sha256",
  "sha3 0.9.1",
  "thiserror",

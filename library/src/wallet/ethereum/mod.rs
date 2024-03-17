@@ -1,10 +1,12 @@
 pub mod address;
-
 use async_trait::async_trait;
 use ethers::{
+    abi::Abi,
+    prelude::*,
     providers::{Http, Middleware, Provider},
     types::{Transaction, U256},
 };
+use std::sync::Arc;
 
 use crate::{
     error::Error,
@@ -70,6 +72,32 @@ impl EthereumWallet {
         let balance = provider.get_balance(addr_h160, None).await?;
         Ok(balance)
     }
+
+    async fn eth_balance_token_by_index(&self, index: u32, provider_url: &str, token_addr: &str) -> Result<U256, Error> {
+        // Получаем адрес по индексу, как и в предыдущем случае
+        let addr = self.eth_address_by_index(index)?;
+        let addr_h160 = address_str_to_h160(&addr)?;
+
+        // Создаем провайдера
+        let provider = Provider::<Http>::try_from(provider_url)?;
+
+        // Адрес токена в формате H160
+        let token_addr_h160 = address_str_to_h160(token_addr)?;
+
+        // Загружаем ABI контракта ERC20
+        let contract_abi = include_str!("../../../res/erc20.abi.json");
+        let contract_abi = serde_json::from_str::<Abi>(contract_abi)?;
+
+        let erc20_contract = Contract::new(token_addr_h160, contract_abi, Arc::new(provider));
+
+        // Получаем баланс токенов на адресе
+        let balance: U256 = erc20_contract
+            .method::<_, U256>("balanceOf", addr_h160)?
+            .call()
+            .await?;
+
+        Ok(balance)
+    }
 }
 
 #[async_trait]
@@ -89,13 +117,13 @@ impl Wallet for EthereumWallet {
     async fn balance(&self, index: u32, provider: &str) -> Result<U256, Error> {
         self.eth_balance_by_index(index, provider).await
     }
-    fn balance_token(
+    async fn balance_token(
         &self,
-        _index: u32,
-        _token_address: &str,
-        _provider: &str,
-    ) -> Result<TokenData, Error> {
-        unimplemented!()
+        index: u32,
+        token_address: &str,
+        provider: &str,
+    ) -> Result<U256, Error> {
+        self.eth_balance_token_by_index(index, provider, token_address).await
     }
     fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()

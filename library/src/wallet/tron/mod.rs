@@ -43,7 +43,6 @@ impl TronWallet {
         let derivation_path = Crypto::Tron.get_hd_path(index)?;
         let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
         let tron_hex_addr = extended_pubk_to_addr(&pubk)?;
-        println!("tron_hex_addr {:?}", tron_hex_addr);
 
         Ok(tron_hex_addr.get().to_owned())
     }
@@ -74,13 +73,9 @@ impl TronWallet {
 
     async fn tron_balance_by_index(&self, index: u32, provider_url: &str) -> Result<U256, Error> {
         let addr = self.tron_hex_address_by_index(index)?;
-        println!("addr {:?}", addr);
         let addr_h160 = address_str_to_h160(&addr)?;
         let provider = Provider::<Http>::try_from(provider_url)?;
-        println!("addrs {:?}", addr);
-        println!("addrs hex {:?}", addr_h160);
         let balance = provider.get_balance(addr_h160, None).await?;
-        println!("balance {:?}", balance);
         Ok(balance)
     }
 }
@@ -102,12 +97,12 @@ impl Wallet for TronWallet {
     async fn balance(&self, index: u32, provider: &str) -> Result<U256, Error> {
         self.tron_balance_by_index(index, provider).await
     }
-    fn balance_token(
+    async fn balance_token(
         &self,
         _index: u32,
         _token_address: &str,
         _provider: &str,
-    ) -> Result<TokenData, Error> {
+    ) -> Result<U256, Error> {
         unimplemented!()
     }
     fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {

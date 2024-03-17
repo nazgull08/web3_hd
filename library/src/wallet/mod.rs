@@ -96,12 +96,12 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the token balance as `TokenData` if successful, or an error if not.
-    fn balance_token(
+    async fn balance_token(
         &self,
         index: u32,
         token_address: &str,
         provider: &str,
-    ) -> Result<TokenData, Error>;
+    ) -> Result<U256, Error>;
     /// Transfers all available native currency from the wallet at the specified index to another address.
     ///
     /// # Arguments

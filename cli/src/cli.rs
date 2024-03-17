@@ -28,8 +28,20 @@ pub async fn handle_command(args: Cli, config: Settings) -> Result<(), Error> {
         Commands::Balance { c } => {
             manager.handle_balance(args.crypto, c).await?;
         }
-        Commands::Balances { c_from, c_to } => {
+        Commands::BalancesRange { c_from, c_to } => {
             manager.handle_balances(args.crypto, c_from, c_to).await?;
+        }
+        Commands::TokenBalance { c } => {
+            manager.handle_balance_tokens(args.crypto, c).await?;
+        }
+        Commands::TokenBalancesRange { c_from, c_to } => {
+
+        }
+        Commands::TotalBalance { c } => {
+
+        }
+        Commands::TotalBalancesRange { c_from, c_to } => {
+
         }
         Commands::Refill => {
             // Логика для пополнения кошелька
