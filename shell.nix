@@ -1,11 +1,15 @@
-{ pkgs ? import <nixpkgs> {} }:
+with import ./nix/pkgs.nix {};
+let merged-openssl = symlinkJoin { name = "merged-openssl"; paths = [ openssl.out openssl.dev ]; };
+in stdenv.mkDerivation rec {
+  name = "web3-hd";
+  env = buildEnv { name = name; paths = buildInputs; };
 
-pkgs.mkShell {
   buildInputs = [
-    pkgs.rustup
+    rustup
+    openssl
+    cmake
   ];
-
   shellHook = ''
-    export RUST_LOG=debug
+  export OPENSSL_DIR="${merged-openssl}"
   '';
 }

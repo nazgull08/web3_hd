@@ -5,6 +5,8 @@ use thiserror::Error;
 pub enum Error {
     #[error("Bitcoin bip32 error")]
     BitcoinBip32Error(#[from] bitcoin::bip32::Error),
+    #[error("Bitcoin Base58 error")]
+    BitcoinBase58Error(#[from] bitcoin::base58::Error),
     #[error("EthAddr is {0} instead of 42 chars long")]
     EthAddrLengthError(usize),
     #[error("secp256k1 error")]
@@ -25,9 +27,13 @@ pub enum Error {
     TronAddrLengthError,
     #[error("Serde parse error")]
     SerdeParseError(#[from] serde_json::Error),
+    #[error("Ethers Contract ABI error")]
+    EthersContractAbiError(#[from] ethers::contract::AbiError),
     #[error("Ethers ABI error")]
-    EthersAbiError(#[from] ethers::contract::AbiError),
+    EthersAbiError(#[from] ethers::abi::Error),
     #[error("Ethers contract error")]
     EthersContractError(#[from] ethers::contract::ContractError<Provider<Http>>),
+    #[error("Web3 Contract error")]
+    Web3ContractError(#[from] web3::contract::Error),
 
 }
