@@ -2,9 +2,10 @@ pub mod cli;
 pub mod commands;
 pub mod error;
 pub mod settings;
+pub mod wallet_manager;
 
-use cli::{handle_command, Cli};
 use clap::Parser;
+use cli::{handle_command, Cli};
 use error::Error;
 use settings::Settings;
 

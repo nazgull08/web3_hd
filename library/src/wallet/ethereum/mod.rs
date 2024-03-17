@@ -8,7 +8,11 @@ use ethers::{
 
 use crate::{
     error::Error,
-    types::{crypto::Crypto, hdseed::{FromSeed, HDSeed}, token_data::TokenData},
+    types::{
+        crypto::Crypto,
+        hdseed::{FromSeed, HDSeed},
+        token_data::TokenData,
+    },
     utils::{address::address_str_to_h160, key::keypair_by_index},
 };
 
@@ -27,7 +31,7 @@ impl FromSeed for EthereumWallet {
 }
 
 impl EthereumWallet {
-    fn eth_address_by_index(&self, index: i32) -> Result<String, Error> {
+    fn eth_address_by_index(&self, index: u32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
         let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
         let eth_addr = extended_pubk_to_addr(&pubk)?;
@@ -35,21 +39,21 @@ impl EthereumWallet {
         Ok(eth_addr.get().to_owned())
     }
 
-    fn eth_pubkey_by_index(&self, index: i32) -> Result<String, Error> {
+    fn eth_pubkey_by_index(&self, index: u32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
         let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(pubk.to_string())
     }
 
-    fn eth_privkey_by_index(&self, index: i32) -> Result<String, Error> {
+    fn eth_privkey_by_index(&self, index: u32) -> Result<String, Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
         let (privk, _) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(privk.private_key.display_secret().to_string())
     }
 
-    fn eth_keypair_by_index(&self, index: i32) -> Result<(String, String), Error> {
+    fn eth_keypair_by_index(&self, index: u32) -> Result<(String, String), Error> {
         let derivation_path = Crypto::Eth.get_hd_path(index)?;
         let (privk, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
@@ -59,7 +63,7 @@ impl EthereumWallet {
         ))
     }
 
-    async fn eth_balance_by_index(&self, index: i32, provider_url: &str) -> Result<U256, Error> {
+    async fn eth_balance_by_index(&self, index: u32, provider_url: &str) -> Result<U256, Error> {
         let addr = self.eth_address_by_index(index)?;
         let addr_h160 = address_str_to_h160(&addr)?;
         let provider = Provider::<Http>::try_from(provider_url)?;
@@ -70,35 +74,35 @@ impl EthereumWallet {
 
 #[async_trait]
 impl Wallet for EthereumWallet {
-    fn address(&self, index: i32) -> Result<String, Error> {
+    fn address(&self, index: u32) -> Result<String, Error> {
         self.eth_address_by_index(index)
     }
-    fn public(&self, index: i32) -> Result<String, Error> {
+    fn public(&self, index: u32) -> Result<String, Error> {
         self.eth_pubkey_by_index(index)
     }
-    fn private(&self, index: i32) -> Result<String, Error> {
+    fn private(&self, index: u32) -> Result<String, Error> {
         self.eth_privkey_by_index(index)
     }
-    fn keypair(&self, index: i32) -> Result<(String, String), Error> {
+    fn keypair(&self, index: u32) -> Result<(String, String), Error> {
         self.eth_keypair_by_index(index)
     }
-    async fn balance(&self, index: i32, provider: &str) -> Result<U256, Error> {
+    async fn balance(&self, index: u32, provider: &str) -> Result<U256, Error> {
         self.eth_balance_by_index(index, provider).await
     }
     fn balance_token(
         &self,
-        _index: i32,
+        _index: u32,
         _token_address: &str,
         _provider: &str,
     ) -> Result<TokenData, Error> {
         unimplemented!()
     }
-    fn sweep(&self, _index: i32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
+    fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()
     }
     fn sweep_token(
         &self,
-        _index: i32,
+        _index: u32,
         _token_address: &str,
         _to: &str,
         _provider: &str,

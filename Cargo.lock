@@ -3945,6 +3945,7 @@ dependencies = [
  "log",
  "serde",
  "thiserror",
+ "tiny-bip39",
  "tokio",
  "web3_hd",
 ]

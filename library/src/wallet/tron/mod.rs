@@ -1,15 +1,23 @@
 pub mod address;
 
 use async_trait::async_trait;
-use ethers::{providers::{Http, Middleware, Provider}, types::{Transaction, U256}};
+use ethers::{
+    providers::{Http, Middleware, Provider},
+    types::{Transaction, U256},
+};
 
 use crate::{
     error::Error,
-    types::{crypto::Crypto, hdseed::{FromSeed, HDSeed}, token_data::TokenData},
+    types::{
+        crypto::Crypto,
+        hdseed::{FromSeed, HDSeed},
+        token_data::TokenData,
+    },
     utils::{address::address_str_to_h160, key::keypair_by_index},
+    wallet::ethereum::address::extended_pubk_to_addr,
 };
 
-use self::address::{extended_pubk_to_addr_tron, extended_pubk_to_addr_tron_hex};
+use self::address::extended_pubk_to_addr_tron;
 use super::Wallet;
 
 pub struct TronWallet {
@@ -23,7 +31,7 @@ impl FromSeed for TronWallet {
 }
 
 impl TronWallet {
-    pub fn tron_address_by_index(&self, index: i32) -> Result<String, Error> {
+    pub fn tron_address_by_index(&self, index: u32) -> Result<String, Error> {
         let derivation_path = Crypto::Tron.get_hd_path(index)?;
         let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
         let tron_addr = extended_pubk_to_addr_tron(&pubk)?;
@@ -31,30 +39,30 @@ impl TronWallet {
         Ok(tron_addr.get().to_owned())
     }
 
-    pub fn tron_hex_address_by_index(&self, index: i32) -> Result<String, Error> {
+    pub fn tron_hex_address_by_index(&self, index: u32) -> Result<String, Error> {
         let derivation_path = Crypto::Tron.get_hd_path(index)?;
         let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
-        let tron_hex_addr = extended_pubk_to_addr_tron_hex(&pubk)?;
-        println!("tron_hex_addr {:?}",tron_hex_addr);
+        let tron_hex_addr = extended_pubk_to_addr(&pubk)?;
+        println!("tron_hex_addr {:?}", tron_hex_addr);
 
         Ok(tron_hex_addr.get().to_owned())
     }
 
-    fn tron_pubkey_by_index(&self, index: i32) -> Result<String, Error> {
+    fn tron_pubkey_by_index(&self, index: u32) -> Result<String, Error> {
         let derivation_path = Crypto::Tron.get_hd_path(index)?;
         let (_, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(pubk.to_string())
     }
 
-    fn tron_privkey_by_index(&self, index: i32) -> Result<String, Error> {
+    fn tron_privkey_by_index(&self, index: u32) -> Result<String, Error> {
         let derivation_path = Crypto::Tron.get_hd_path(index)?;
         let (privk, _) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(privk.private_key.display_secret().to_string())
     }
 
-    fn tron_keypair_by_index(&self, index: i32) -> Result<(String, String), Error> {
+    fn tron_keypair_by_index(&self, index: u32) -> Result<(String, String), Error> {
         let derivation_path = Crypto::Tron.get_hd_path(index)?;
         let (privk, pubk) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
@@ -64,50 +72,50 @@ impl TronWallet {
         ))
     }
 
-    async fn tron_balance_by_index(&self, index: i32, provider_url: &str) -> Result<U256, Error> {
+    async fn tron_balance_by_index(&self, index: u32, provider_url: &str) -> Result<U256, Error> {
         let addr = self.tron_hex_address_by_index(index)?;
-        println!("addr {:?}",addr);
+        println!("addr {:?}", addr);
         let addr_h160 = address_str_to_h160(&addr)?;
         let provider = Provider::<Http>::try_from(provider_url)?;
-        println!("addrs {:?}",addr);
-        println!("addrs hex {:?}",addr_h160);
+        println!("addrs {:?}", addr);
+        println!("addrs hex {:?}", addr_h160);
         let balance = provider.get_balance(addr_h160, None).await?;
-        println!("balance {:?}",balance);
+        println!("balance {:?}", balance);
         Ok(balance)
     }
 }
 
 #[async_trait]
 impl Wallet for TronWallet {
-    fn address(&self, index: i32) -> Result<String, Error> {
+    fn address(&self, index: u32) -> Result<String, Error> {
         self.tron_address_by_index(index)
     }
-    fn public(&self, index: i32) -> Result<String, Error> {
+    fn public(&self, index: u32) -> Result<String, Error> {
         self.tron_pubkey_by_index(index)
     }
-    fn private(&self, index: i32) -> Result<String, Error> {
+    fn private(&self, index: u32) -> Result<String, Error> {
         self.tron_privkey_by_index(index)
     }
-    fn keypair(&self, index: i32) -> Result<(String, String), Error> {
+    fn keypair(&self, index: u32) -> Result<(String, String), Error> {
         self.tron_keypair_by_index(index)
     }
-    async fn balance(&self, index: i32, provider: &str) -> Result<U256, Error> {
+    async fn balance(&self, index: u32, provider: &str) -> Result<U256, Error> {
         self.tron_balance_by_index(index, provider).await
     }
     fn balance_token(
         &self,
-        _index: i32,
+        _index: u32,
         _token_address: &str,
         _provider: &str,
     ) -> Result<TokenData, Error> {
         unimplemented!()
     }
-    fn sweep(&self, _index: i32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
+    fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()
     }
     fn sweep_token(
         &self,
-        _index: i32,
+        _index: u32,
         _token_address: &str,
         _to: &str,
         _provider: &str,

@@ -65,18 +65,3 @@ pub fn extended_pubk_to_addr_tron(pubk: &Xpub) -> Result<TronAddr, Error> {
     let addr = &base58::encode(&final_addr_bytes);
     TronAddr::new(addr)
 }
-
-pub fn extended_pubk_to_addr_tron_hex(pubk: &Xpub) -> Result<TronAddr, Error> {
-    //massage into the right format
-    let pubk_str = pubk.public_key.to_string();
-    let pubk_secp = secp256k1::PublicKey::from_str(&pubk_str)?;
-    //format as uncompressed key, remove "04" in the beginning
-    let pubk_uncomp = &PublicKey::new_uncompressed(pubk_secp).to_string()[2..];
-    //decode from hex and pass to keccak for hashing
-    let pubk_bytes = hex::decode(pubk_uncomp)?;
-    let addr = &keccak_hash(&pubk_bytes);
-    //keep last 20 bytes of the result
-    let addr = &addr[(addr.len() - 40)..];
-    //massage into domain unit
-    TronAddr::new_hex(addr)
-}

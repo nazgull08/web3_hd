@@ -38,7 +38,7 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the address string if successful, or an error if not.
-    fn address(&self, index: i32) -> Result<String, Error>;
+    fn address(&self, index: u32) -> Result<String, Error>;
 
     /// Retrieves the wallet's private key at the specified index.
     ///
@@ -49,7 +49,7 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the private key string if successful, or an error if not.
-    fn private(&self, index: i32) -> Result<String, Error>;
+    fn private(&self, index: u32) -> Result<String, Error>;
 
     /// Retrieves the wallet's public key at the specified index.
     ///
@@ -60,7 +60,7 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the public key string if successful, or an error if not.
-    fn public(&self, index: i32) -> Result<String, Error>;
+    fn public(&self, index: u32) -> Result<String, Error>;
 
     /// Generates and returns the keypair (private and public keys) for the wallet at the specified index.
     ///
@@ -71,7 +71,7 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing a tuple of (private key, public key) if successful, or an error if not.
-    fn keypair(&self, index: i32) -> Result<(String, String), Error>;
+    fn keypair(&self, index: u32) -> Result<(String, String), Error>;
 
     /// Retrieves the balance of the wallet at the specified index.
     ///
@@ -83,11 +83,7 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing the balance as `U256` if successful, or an error if not.
-    async fn balance(
-        &self,
-        index: i32,
-        provider: &str,
-    ) -> Result<U256, Error>;
+    async fn balance(&self, index: u32, provider: &str) -> Result<U256, Error>;
 
     /// Retrieves the token balance of the specified token in the wallet at the given index.
     ///
@@ -102,7 +98,7 @@ pub trait Wallet {
     /// A `Result` containing the token balance as `TokenData` if successful, or an error if not.
     fn balance_token(
         &self,
-        index: i32,
+        index: u32,
         token_address: &str,
         provider: &str,
     ) -> Result<TokenData, Error>;
@@ -117,7 +113,7 @@ pub trait Wallet {
     /// # Returns
     ///
     /// A `Result` containing a tuple (transaction details, transferred balance) if successful, or an error if not.
-    fn sweep(&self, index: i32, to: &str, provider: &str) -> Result<(Transaction, U256), Error>;
+    fn sweep(&self, index: u32, to: &str, provider: &str) -> Result<(Transaction, U256), Error>;
 
     /// Transfers all available tokens of a specific type from the wallet at the specified index to another address.
     ///
@@ -133,7 +129,7 @@ pub trait Wallet {
     /// A `Result` containing a tuple (transaction details, transferred token balance) if successful, or an error if not.
     fn sweep_token(
         &self,
-        index: i32,
+        index: u32,
         token_address: &str,
         to: &str,
         provider: &str,
