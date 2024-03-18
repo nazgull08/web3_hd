@@ -3,9 +3,9 @@ use clap::Subcommand;
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Retrieves the balance of the main currency for a specified address.
-    Balance { 
+    Balance {
         /// The address index for which to retrieve the balance.
-        c: u32 
+        c: u32,
     },
     /// Retrieves the balances of the main currency for a range of addresses.
     BalancesRange {
@@ -41,23 +41,23 @@ pub enum Commands {
     /// Refills the wallet balance. Specific implementation details can vary.
     Refill,
     /// Sweeps the balance of the main currency to another address.
-    Sweep { 
+    Sweep {
         /// The address index from which to sweep the balance.
-        c: u32 
+        c: u32,
     },
     /// Generates a new mnemonic phrase for wallet creation.
     GenPhrase,
     /// Retrieves the private key for a specified address.
-    PrivKey { 
+    PrivKey {
         /// The address index for which to retrieve the private key.
-        c: u32 
+        c: u32,
     },
     /// Sends the main currency to another address.
-    SendMain { 
+    SendMain {
         /// The sending address index.
-        c_from: u32, 
+        c_from: u32,
         /// The recipient's address.
-        c_to: String 
+        c_to: String,
     },
     /// Sends a specified token to another address.
     SendToken {

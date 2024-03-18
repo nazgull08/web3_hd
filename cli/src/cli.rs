@@ -35,13 +35,17 @@ pub async fn handle_command(args: Cli, config: Settings) -> Result<(), Error> {
             manager.handle_balance_tokens(args.crypto, c).await?;
         }
         Commands::TokenBalancesRange { c_from, c_to } => {
-
+            manager
+                .handle_balances_tokens(args.crypto, c_from, c_to)
+                .await?;
         }
         Commands::TotalBalance { c } => {
-
+            manager.handle_total_balance(args.crypto, c).await?;
         }
         Commands::TotalBalancesRange { c_from, c_to } => {
-
+            manager
+                .handle_total_balances_range(args.crypto, c_from, c_to)
+                .await?;
         }
         Commands::Refill => {
             // Логика для пополнения кошелька
@@ -57,7 +61,9 @@ pub async fn handle_command(args: Cli, config: Settings) -> Result<(), Error> {
             println!("-----------");
             println!("{:?}", phrase);
         }
-        Commands::PrivKey { c } => {}
+        Commands::PrivKey { c } => {
+            manager.handle_priv_key(args.crypto, c)?;
+        }
         Commands::SendMain { c_from, c_to } => {
             // Логика отправки основной валюты
         }

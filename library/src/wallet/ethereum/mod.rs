@@ -73,7 +73,12 @@ impl EthereumWallet {
         Ok(balance)
     }
 
-    async fn eth_balance_token_by_index(&self, index: u32, provider_url: &str, token_addr: &str) -> Result<U256, Error> {
+    async fn eth_balance_token_by_index(
+        &self,
+        index: u32,
+        provider_url: &str,
+        token_addr: &str,
+    ) -> Result<U256, Error> {
         // Получаем адрес по индексу, как и в предыдущем случае
         let addr = self.eth_address_by_index(index)?;
         let addr_h160 = address_str_to_h160(&addr)?;
@@ -123,7 +128,8 @@ impl Wallet for EthereumWallet {
         token_address: &str,
         provider: &str,
     ) -> Result<U256, Error> {
-        self.eth_balance_token_by_index(index, provider, token_address).await
+        self.eth_balance_token_by_index(index, provider, token_address)
+            .await
     }
     fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()

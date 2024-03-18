@@ -2,7 +2,10 @@ pub mod address;
 
 use async_trait::async_trait;
 use bitcoin::base58;
-use ethers::{providers::{Http, Middleware, Provider}, types::{Transaction, U256}};
+use ethers::{
+    providers::{Http, Middleware, Provider},
+    types::{Transaction, U256},
+};
 use web3::contract::{Contract, Options};
 
 use crate::{
@@ -78,10 +81,14 @@ impl TronWallet {
         Ok(balance)
     }
 
-    async fn tron_balance_token_by_index(&self, index: u32, provider_url: &str, token_addr: &str) -> Result<U256, Error> {
+    async fn tron_balance_token_by_index(
+        &self,
+        index: u32,
+        provider_url: &str,
+        token_addr: &str,
+    ) -> Result<U256, Error> {
         let addr = self.tron_hex_address_by_index(index)?;
         let addr_h160 = address_str_to_h160(&addr)?;
-
 
         let transport = web3::transports::Http::new(provider_url).unwrap();
         let web3 = web3::Web3::new(transport);
@@ -91,13 +98,11 @@ impl TronWallet {
         let token_addr_hex_p = "0x".to_owned() + &token_addr_hex[2..token_addr_hex.len() - 8];
         let token_addr_h160 = address_str_to_h160(&token_addr_hex_p)?;
 
-
         let contract = Contract::from_json(
             web3.eth(),
             token_addr_h160,
             include_bytes!("../../../res/erc20.abi.json"),
         )?;
-        
 
         let result = contract.query("balanceOf", (addr_h160,), None, Options::default(), None);
         let balance: U256 = result.await?;
@@ -129,7 +134,8 @@ impl Wallet for TronWallet {
         token_address: &str,
         provider: &str,
     ) -> Result<U256, Error> {
-        self.tron_balance_token_by_index(index, provider, token_address).await
+        self.tron_balance_token_by_index(index, provider, token_address)
+            .await
     }
     fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()

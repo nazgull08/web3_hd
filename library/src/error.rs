@@ -1,4 +1,4 @@
-use ethers::providers::{Provider,Http};
+use ethers::providers::{Http, Provider};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -35,5 +35,4 @@ pub enum Error {
     EthersContractError(#[from] ethers::contract::ContractError<Provider<Http>>),
     #[error("Web3 Contract error")]
     Web3ContractError(#[from] web3::contract::Error),
-
 }
