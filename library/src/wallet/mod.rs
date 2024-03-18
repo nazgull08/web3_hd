@@ -17,7 +17,7 @@
 //! blockchain wallets through a unified interface provided by the `Wallet` trait.
 
 use async_trait::async_trait;
-use ethers::types::{Transaction, U256};
+use ethers::types::{Transaction, TransactionReceipt, U256};
 
 use crate::{error::Error, types::token_data::TokenData};
 
@@ -134,4 +134,51 @@ pub trait Wallet {
         to: &str,
         provider: &str,
     ) -> Result<(Transaction, TokenData), Error>;
+    /// Transfers a specified amount of native currency from the wallet at the specified index to another address.
+    ///
+    /// This method is asynchronous and requires a provider URL to interact with the blockchain network.
+    /// It performs a native currency transfer operation and returns the transaction details upon success.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - An index specifying which wallet's funds to transfer.
+    /// * `to` - The destination address to receive the funds.
+    /// * `amount` - The amount of native currency to be transferred.
+    /// * `provider` - A string slice that holds the provider URL to broadcast the transaction.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the `Transaction` details if successful, or an error if not.
+    async fn transfer(
+        &self,
+        index: u32,
+        to: &str,
+        amount: U256,
+        provider: &str,
+    ) -> Result<TransactionReceipt, Error>;
+
+    /// Transfers a specified amount of tokens from the wallet at the specified index to another address.
+    ///
+    /// This method is asynchronous and requires a provider URL to interact with the blockchain network.
+    /// It performs a token transfer operation for the specified token type and returns the transaction details upon success.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - An index specifying which wallet's tokens to transfer.
+    /// * `token_address` - The contract address of the token to be transferred.
+    /// * `to` - The destination address to receive the tokens.
+    /// * `amount` - The amount of tokens to be transferred, represented as `TokenData`.
+    /// * `provider` - A string slice that holds the provider URL to broadcast the transaction.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the `Transaction` details if successful, or an error if not.
+    async fn transfer_token(
+        &self,
+        index: u32,
+        token_address: &str,
+        to: &str,
+        amount: U256,
+        provider: &str,
+    ) -> Result<TransactionReceipt, Error>;
 }

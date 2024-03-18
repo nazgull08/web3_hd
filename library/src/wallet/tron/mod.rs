@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use bitcoin::base58;
 use ethers::{
     providers::{Http, Middleware, Provider},
-    types::{Transaction, U256},
+    types::{Transaction, TransactionReceipt, U256},
 };
 use web3::contract::{Contract, Options};
 
@@ -137,6 +137,28 @@ impl Wallet for TronWallet {
         self.tron_balance_token_by_index(index, provider, token_address)
             .await
     }
+
+    async fn transfer(
+        &self,
+        index: u32,
+        to: &str,
+        amount: U256,
+        provider: &str,
+    ) -> Result<TransactionReceipt, Error> {
+        Err(Error::TronAddrLengthError)
+    }
+
+    async fn transfer_token(
+        &self,
+        index: u32,
+        token_address: &str,
+        to: &str,
+        amount: U256,
+        provider: &str,
+    ) -> Result<TransactionReceipt, Error> {
+        Err(Error::TronAddrLengthError)
+    }
+
     fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()
     }

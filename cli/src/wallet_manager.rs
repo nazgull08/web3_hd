@@ -1,3 +1,4 @@
+use ethers::types::U256;
 use web3_hd::{
     types::{
         crypto::Crypto,
@@ -47,7 +48,7 @@ impl WalletManager {
         if let Some(crypto) = ocrypto {
             let seed = HDSeed::new(&self.config.hd_phrase)?;
             let wallet = self.get_wallet(&crypto, seed);
-            let provider_url= &self.get_provider(&crypto);
+            let provider_url = &self.get_provider(&crypto);
             let address = wallet.address(c)?;
             let balance = wallet.balance(c, provider_url).await?;
             println!("Address: {}, Balance: {}", address, balance);
@@ -68,7 +69,7 @@ impl WalletManager {
             let c_from = c_from.unwrap_or(0);
             let c_to = c_to.unwrap_or(10);
             let wallet = self.get_wallet(&crypto, seed);
-            let provider_url= &self.get_provider(&crypto);
+            let provider_url = &self.get_provider(&crypto);
             for index in c_from..=c_to {
                 let address = wallet.address(index)?;
                 let balance = wallet.balance(index, provider_url).await?;
@@ -88,7 +89,7 @@ impl WalletManager {
         if let Some(crypto) = ocrypto {
             let seed = HDSeed::new(&self.config.hd_phrase)?;
             let wallet = self.get_wallet(&crypto, seed);
-            let provider_url= &self.get_provider(&crypto);
+            let provider_url = &self.get_provider(&crypto);
             let tokens = self.get_wallet_tokens(&crypto);
             let address = wallet.address(c)?;
             for token in tokens {
@@ -115,7 +116,7 @@ impl WalletManager {
             let c_from = c_from.unwrap_or(0);
             let c_to = c_to.unwrap_or(10);
             let wallet = self.get_wallet(&crypto, seed);
-            let provider_url= &self.get_provider(&crypto);
+            let provider_url = &self.get_provider(&crypto);
             let tokens = self.get_wallet_tokens(&crypto);
             for token in tokens {
                 for index in c_from..=c_to {
@@ -137,7 +138,7 @@ impl WalletManager {
         if let Some(crypto) = ocrypto {
             let seed = HDSeed::new(&self.config.hd_phrase)?;
             let wallet = self.get_wallet(&crypto, seed);
-            let provider_url= &self.get_provider(&crypto);
+            let provider_url = &self.get_provider(&crypto);
             let address = wallet.address(c)?;
             let balance = wallet.balance(c, provider_url).await?;
             let tokens = self.get_wallet_tokens(&crypto);
@@ -164,7 +165,7 @@ impl WalletManager {
             let c_from = c_from.unwrap_or(0);
             let c_to = c_to.unwrap_or(10);
             let wallet = self.get_wallet(&crypto, seed);
-            let provider_url= &self.get_provider(&crypto);
+            let provider_url = &self.get_provider(&crypto);
             let tokens = self.get_wallet_tokens(&crypto);
             for index in c_from..=c_to {
                 let address = wallet.address(index)?;
@@ -186,7 +187,28 @@ impl WalletManager {
         if let Some(crypto) = ocrypto {
             let seed = HDSeed::new(&self.config.hd_phrase)?;
             let wallet = self.get_wallet(&crypto, seed);
-            println!("Address: {}\n Private: {}",wallet.address(c)?,wallet.private(c)?);
+            println!(
+                "Address: {}\n Private: {}",
+                wallet.address(c)?,
+                wallet.private(c)?
+            );
+            Ok(())
+        } else {
+            Err(Error::ArgsError)
+        }
+    }
+
+    pub async fn handle_transfer(&self, ocrypto: Option<Crypto>, c_from: u32, c_to: String) -> Result<(), Error> {
+        if let Some(crypto) = ocrypto {
+            let seed = HDSeed::new(&self.config.hd_phrase)?;
+            let wallet = self.get_wallet(&crypto, seed);
+            let provider_url = &self.get_provider(&crypto);
+            let amount = U256::from(ethers::utils::parse_ether(0.000000000000123)?);
+            let balance = wallet.balance(c_from, provider_url).await?;
+            println!("balance {:?}",balance);
+            println!("amount {:?}",amount);
+            let receipt = wallet.transfer(c_from, &c_to, amount,&provider_url).await?;
+            println!("Transaction Receipt {:?}",receipt);
             Ok(())
         } else {
             Err(Error::ArgsError)

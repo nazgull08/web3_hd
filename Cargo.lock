@@ -4226,6 +4226,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "bitcoin",
+ "ecdsa",
  "eth_checksum",
  "ethers",
  "hex",
@@ -4248,6 +4249,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "config",
+ "ethers",
  "log",
  "serde",
  "thiserror",

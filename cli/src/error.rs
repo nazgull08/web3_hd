@@ -10,4 +10,6 @@ pub enum Error {
     ArgsError,
     #[error("A 'provider_url' must be specified in the configuration.")]
     ProviderUrlError,
+    #[error("Amount parse error")]
+    EtherParseAmountError(#[from] ethers::utils::ConversionError),
 }

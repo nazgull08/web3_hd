@@ -1,4 +1,7 @@
-use ethers::providers::{Http, Provider};
+use ethers::{
+    middleware::signer,
+    providers::{Http, Provider},
+};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -31,8 +34,20 @@ pub enum Error {
     EthersContractAbiError(#[from] ethers::contract::AbiError),
     #[error("Ethers ABI error")]
     EthersAbiError(#[from] ethers::abi::Error),
+    #[error("Ethers wallet error")]
+    EthersWalletError(#[from] ethers::signers::WalletError),
     #[error("Ethers contract error")]
     EthersContractError(#[from] ethers::contract::ContractError<Provider<Http>>),
+    #[error("Ethers sekp error")]
+    EthersSekpError(
+        #[from]
+        signer::SignerMiddlewareError<
+            Provider<Http>,
+            ethers::signers::Wallet<ecdsa::SigningKey<ethers::core::k256::Secp256k1>>,
+        >,
+    ),
     #[error("Web3 Contract error")]
     Web3ContractError(#[from] web3::contract::Error),
+    #[error("Eth transfer tx receipt is none")]
+    EthNoneTransferTransactionReceiptError,
 }

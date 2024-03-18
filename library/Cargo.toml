@@ -15,6 +15,7 @@ path = "src/lib.rs"
 [dependencies]
 async-trait = "0.1.77"
 bitcoin = "0.31.1"
+ecdsa = "0.16.9"
 eth_checksum = "0.1.2"
 ethers = "2.0.14"
 hex = "0.4.3"

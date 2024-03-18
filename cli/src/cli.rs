@@ -65,7 +65,7 @@ pub async fn handle_command(args: Cli, config: Settings) -> Result<(), Error> {
             manager.handle_priv_key(args.crypto, c)?;
         }
         Commands::SendMain { c_from, c_to } => {
-            // Логика отправки основной валюты
+            manager.handle_transfer(args.crypto, c_from, c_to).await?;
         }
         Commands::SendToken {
             c_from,

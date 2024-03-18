@@ -4,9 +4,11 @@ use ethers::{
     abi::Abi,
     prelude::*,
     providers::{Http, Middleware, Provider},
+    signers::Wallet,
     types::{Transaction, U256},
 };
-use std::sync::Arc;
+use secp256k1::SecretKey;
+use std::{str::FromStr, sync::Arc};
 
 use crate::{
     error::Error,
@@ -20,7 +22,7 @@ use crate::{
 
 use self::address::extended_pubk_to_addr;
 
-use super::Wallet;
+use super::Wallet as HDWallet;
 
 pub struct EthereumWallet {
     pub seed: HDSeed,
@@ -53,6 +55,13 @@ impl EthereumWallet {
         let (privk, _) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
 
         Ok(privk.private_key.display_secret().to_string())
+    }
+
+    fn eth_privkey_sekp_by_index(&self, index: u32) -> Result<SecretKey, Error> {
+        let derivation_path = Crypto::Eth.get_hd_path(index)?;
+        let (privk, _) = keypair_by_index(&self.seed.mnemonic, &derivation_path)?;
+
+        Ok(privk.private_key)
     }
 
     fn eth_keypair_by_index(&self, index: u32) -> Result<(String, String), Error> {
@@ -103,10 +112,39 @@ impl EthereumWallet {
 
         Ok(balance)
     }
+
+    async fn eth_transfer(
+        &self,
+        index: u32,
+        to: &str,
+        amount: U256,
+        provider: &str,
+    ) -> Result<Option<TransactionReceipt>, Error> {
+        // Retrieve the private key for the specified wallet index.
+        let priv_key_str = self.eth_privkey_by_index(index)?;
+
+        // Parse the destination address.
+        let to_address = to.parse::<Address>()?;
+
+        // Create the provider.
+        let provider =
+            Provider::<Http>::try_from(provider)?.interval(std::time::Duration::from_millis(2000));
+
+        // Create a wallet from the private key and attach it to the provider.
+        let wallet = Wallet::from_str(&priv_key_str)?.with_chain_id(Chain::Sepolia);
+        println!("wallet {:?}",wallet);
+        let client = SignerMiddleware::new(provider.clone(), wallet.clone());
+
+        let tx = TransactionRequest::new().to(to_address).value(amount);
+
+        let tx = client.send_transaction(tx, None).await?.await?;
+        // Return the details of the confirmed transaction.
+        Ok(tx)
+    }
 }
 
 #[async_trait]
-impl Wallet for EthereumWallet {
+impl HDWallet for EthereumWallet {
     fn address(&self, index: u32) -> Result<String, Error> {
         self.eth_address_by_index(index)
     }
@@ -131,6 +169,30 @@ impl Wallet for EthereumWallet {
         self.eth_balance_token_by_index(index, provider, token_address)
             .await
     }
+    async fn transfer(
+        &self,
+        index: u32,
+        to: &str,
+        amount: U256,
+        provider: &str,
+    ) -> Result<TransactionReceipt, Error> {
+        match self.eth_transfer(index, to, amount, provider).await? {
+            Some(receipt) => Ok(receipt),
+            None => Err(Error::EthNoneTransferTransactionReceiptError),
+        }
+    }
+
+    async fn transfer_token(
+        &self,
+        index: u32,
+        token_address: &str,
+        to: &str,
+        amount: U256,
+        provider: &str,
+    ) -> Result<TransactionReceipt, Error> {
+        Err(Error::TronAddrLengthError)
+    }
+
     fn sweep(&self, _index: u32, _to: &str, _provider: &str) -> Result<(Transaction, U256), Error> {
         unimplemented!()
     }
