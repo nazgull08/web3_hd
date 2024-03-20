@@ -198,17 +198,24 @@ impl WalletManager {
         }
     }
 
-    pub async fn handle_transfer(&self, ocrypto: Option<Crypto>, c_from: u32, c_to: String) -> Result<(), Error> {
+    pub async fn handle_transfer(
+        &self,
+        ocrypto: Option<Crypto>,
+        c_from: u32,
+        c_to: String,
+    ) -> Result<(), Error> {
         if let Some(crypto) = ocrypto {
             let seed = HDSeed::new(&self.config.hd_phrase)?;
             let wallet = self.get_wallet(&crypto, seed);
             let provider_url = &self.get_provider(&crypto);
             let amount = U256::from(ethers::utils::parse_ether(0.000000000000123)?);
             let balance = wallet.balance(c_from, provider_url).await?;
-            println!("balance {:?}",balance);
-            println!("amount {:?}",amount);
-            let receipt = wallet.transfer(c_from, &c_to, amount,&provider_url).await?;
-            println!("Transaction Receipt {:?}",receipt);
+            println!("balance {:?}", balance);
+            println!("amount {:?}", amount);
+            let receipt = wallet
+                .transfer(c_from, &c_to, amount, &provider_url)
+                .await?;
+            println!("Transaction Receipt {:?}", receipt);
             Ok(())
         } else {
             Err(Error::ArgsError)

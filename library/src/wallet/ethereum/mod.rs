@@ -132,7 +132,7 @@ impl EthereumWallet {
 
         // Create a wallet from the private key and attach it to the provider.
         let wallet = Wallet::from_str(&priv_key_str)?.with_chain_id(Chain::Sepolia);
-        println!("wallet {:?}",wallet);
+        println!("wallet {:?}", wallet);
         let client = SignerMiddleware::new(provider.clone(), wallet.clone());
 
         let tx = TransactionRequest::new().to(to_address).value(amount);
