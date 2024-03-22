@@ -1,4 +1,4 @@
-use clap::Parser;
+se clap::Parser;
 
 use bip39::Mnemonic;
 use web3_hd::{
@@ -50,7 +50,7 @@ pub async fn handle_command(args: Cli, config: Settings) -> Result<(), Error> {
         Commands::Refill => {
             // Логика для пополнения кошелька
         }
-        Commands::Sweep { c } => {
+        Commands::Sweep { _c } => {
             //let address = wallet.address(c as i32)?;
             //let (tx, balance) = wallet.sweep(c as i32, &address, &config.eth_provider)?;
             //println!("Swept {} from address {}", balance, address);
