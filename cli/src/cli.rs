@@ -47,10 +47,10 @@ pub async fn handle_command(args: Cli, config: Settings) -> Result<(), Error> {
                 .handle_total_balances_range(args.crypto, c_from, c_to)
                 .await?;
         }
-        Commands::Refill => {
+        Commands::Refill {c }=> {
             // Логика для пополнения кошелька
         }
-        Commands::Sweep { _c } => {
+        Commands::Sweep { c } => {
             //let address = wallet.address(c as i32)?;
             //let (tx, balance) = wallet.sweep(c as i32, &address, &config.eth_provider)?;
             //println!("Swept {} from address {}", balance, address);

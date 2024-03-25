@@ -39,7 +39,9 @@ pub enum Commands {
         c_to: Option<u32>,
     },
     /// Refills the wallet balance. Specific implementation details can vary.
-    Refill,
+    Refill{
+        c: u32
+    },
     /// Sweeps the balance of the main currency to another address.
     Sweep {
         /// The address index from which to sweep the balance.
