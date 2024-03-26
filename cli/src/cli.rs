@@ -1,4 +1,4 @@
-se clap::Parser;
+use clap::Parser;
 
 use bip39::Mnemonic;
 use web3_hd::{
